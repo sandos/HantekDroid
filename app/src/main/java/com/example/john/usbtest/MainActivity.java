@@ -23,21 +23,28 @@ public class MainActivity extends Activity {
 
         UsbDevice device = (UsbDevice) getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
 		if(device==null) return;
-		Log.v("majs","usb " + device.getDeviceName() + "|" + device.getProductId()+ "|" + device.getVendorId());
+		Log.e("majs","usb " + device.getDeviceName() + "|" + device.getProductId()+ "|" + device.getVendorId());
         UsbInterface uif = device.getInterface(1);
         UsbEndpoint endpoint = uif.getEndpoint(0);
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         UsbDeviceConnection connection = manager.openDevice(device);
+		if(connection==null)return;
         connection.claimInterface(uif, true);
 
         int index = 0;
         for(int i=0; i<458; i++) {
             int size = FW.HT6022_Firmware[index] + ((FW.HT6022_Firmware[index+1])<<8);
-            //int value = FW.HT6022_Firmware[index+2] + ((FW.HT6022_Firmware[index+3])<<8);
+            int value = FW.HT6022_Firmware[index+2] + ((FW.HT6022_Firmware[index+3])<<8);
+			byte tmp[] = new byte[size];
+			for(int j=0; j<size; j++) {
+				tmp[j] = (byte)(FW.HT6022_Firmware[j+index+4] & 0xff);
+				Log.e("majs", "" + tmp[j]);
+			}
+			index += size+4;
             //connection.controlTransfer();
 
         }
-		Log.v("majs","usb " + endpoint.getMaxPacketSize());
+		Log.e("majs","usb " + endpoint.getMaxPacketSize());
     }
 
 
