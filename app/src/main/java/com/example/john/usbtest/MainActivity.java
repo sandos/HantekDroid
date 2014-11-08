@@ -61,6 +61,10 @@ public class MainActivity extends Activity {
         Toast toast = Toast.makeText(getApplicationContext(), "Did FW init", Toast.LENGTH_LONG);
         toast.show();
 		Log.e("majs","usb " + endpoint.getMaxPacketSize());
+        connection.releaseInterface(uif);
+        connection.close();
+
+        
     }
 
 
