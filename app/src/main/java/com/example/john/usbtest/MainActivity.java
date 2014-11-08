@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.util.*;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -21,50 +22,62 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        TextView hello = (TextView) findViewById(R.id.Hello);
 
         UsbDevice device = (UsbDevice) getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
-		if(device==null) return;
-		Log.e("majs","usb " + device.getDeviceName() + "|" + device.getProductId()+ "|" + device.getVendorId());
-        UsbInterface uif = device.getInterface(1);
-        UsbEndpoint endpoint = uif.getEndpoint(0);
-        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        UsbDeviceConnection connection = manager.openDevice(device);
-		if(connection==null)return;
-        connection.claimInterface(uif, true);
+		if(device==null) {
+            Log.e("majs", "Returned due to null device");
+            hello.setText(hello.getText() + " No device");
+            return;
+        }
+        hello.setText("" + device.getVendorId());
+        if(device.getVendorId() == 0x4b4) {
+            Log.e("majs", "usb " + device.getDeviceName() + "|" + device.getProductId() + "|" + device.getVendorId());
+            UsbInterface uif = device.getInterface(1);
+            UsbEndpoint endpoint = uif.getEndpoint(0);
+            UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+            UsbDeviceConnection connection = manager.openDevice(device);
+            if (connection == null) return;
+            connection.claimInterface(uif, true);
 
-        int index = 0;
-        for(int i=0; i<458; i++) {
-            int size = FW.HT6022_Firmware[index] + ((FW.HT6022_Firmware[index+1])<<8);
-            int value = FW.HT6022_Firmware[index+2] + ((FW.HT6022_Firmware[index+3])<<8);
-			byte tmp[] = new byte[size];
-			for(int j=0; j<size; j++) {
-				tmp[j] = (byte)(FW.HT6022_Firmware[j+index+4] & 0xff);
-				Log.e("majs", "" + tmp[j]);
-			}
-            int res = connection.controlTransfer(
-                    FW.HT6022_FIRMWARE_REQUEST_TYPE,
-                    FW.HT6022_FIRMWARE_REQUEST,
-                    value,
-                    FW.HT6022_FIRMWARE_INDEX,
-                    tmp,
-                    size,
-                    3000);
-            if(res != size ){
-                Log.e("majs", "Did not transfer all of " + size + " just " + res);
-                if(res < 0) {
-                    Log.e("majs", "ERROR");
+            int index = 0;
+            for (int i = 0; i < 458; i++) {
+                int size = FW.HT6022_Firmware[index] + ((FW.HT6022_Firmware[index + 1]) << 8);
+                int value = FW.HT6022_Firmware[index + 2] + ((FW.HT6022_Firmware[index + 3]) << 8);
+                byte tmp[] = new byte[size];
+                for (int j = 0; j < size; j++) {
+                    tmp[j] = (byte) (FW.HT6022_Firmware[j + index + 4] & 0xff);
+                    Log.e("majs", "" + tmp[j]);
                 }
+                int res = connection.controlTransfer(
+                        FW.HT6022_FIRMWARE_REQUEST_TYPE,
+                        FW.HT6022_FIRMWARE_REQUEST,
+                        value,
+                        FW.HT6022_FIRMWARE_INDEX,
+                        tmp,
+                        size,
+                        3000);
+                if (res != size) {
+                    Log.e("majs", "Did not transfer all of " + size + " just " + res);
+                    if (res < 0) {
+                        Log.e("majs", "ERROR");
+                    }
+                }
+                index += size + 4;
+
             }
-			index += size+4;
+            Toast toast = Toast.makeText(getApplicationContext(), "Did FW init", Toast.LENGTH_LONG);
+            toast.show();
+            hello.setText(hello.getText() + " Firmware done");
+            Log.e("majs", "usb " + endpoint.getMaxPacketSize());
+            connection.releaseInterface(uif);
+            connection.close();
+        } else if(device.getVendorId() == 0x4b5) {
+            Log.e("majs", "GOT NEWLY INITED DEVICE: ");
 
         }
-        Toast toast = Toast.makeText(getApplicationContext(), "Did FW init", Toast.LENGTH_LONG);
-        toast.show();
-		Log.e("majs","usb " + endpoint.getMaxPacketSize());
-        connection.releaseInterface(uif);
-        connection.close();
 
-        
+
     }
 
 
