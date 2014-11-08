@@ -10,6 +10,7 @@ import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.util.*;
 
 
 public class MainActivity extends Activity {
@@ -21,7 +22,9 @@ public class MainActivity extends Activity {
 
 
         UsbDevice device = (UsbDevice) getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
-        UsbInterface uif = device.getInterface(0);
+		if(device==null) return;
+		Log.v("majs","usb " + device.getDeviceName() + "|" + device.getProductId()+ "|" + device.getVendorId());
+        UsbInterface uif = device.getInterface(1);
         UsbEndpoint endpoint = uif.getEndpoint(0);
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         UsbDeviceConnection connection = manager.openDevice(device);
@@ -30,10 +33,11 @@ public class MainActivity extends Activity {
         int index = 0;
         for(int i=0; i<458; i++) {
             int size = FW.HT6022_Firmware[index] + ((FW.HT6022_Firmware[index+1])<<8);
-            int value = FW.HT6022_Firmware[index+2] + ((FW.HT6022_Firmware[index+3])<<8);
+            //int value = FW.HT6022_Firmware[index+2] + ((FW.HT6022_Firmware[index+3])<<8);
             //connection.controlTransfer();
 
         }
+		Log.v("majs","usb " + endpoint.getMaxPacketSize());
     }
 
 
