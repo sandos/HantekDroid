@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.util.*;
+import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
@@ -40,10 +41,25 @@ public class MainActivity extends Activity {
 				tmp[j] = (byte)(FW.HT6022_Firmware[j+index+4] & 0xff);
 				Log.e("majs", "" + tmp[j]);
 			}
+            int res = connection.controlTransfer(
+                    FW.HT6022_FIRMWARE_REQUEST_TYPE,
+                    FW.HT6022_FIRMWARE_REQUEST,
+                    value,
+                    FW.HT6022_FIRMWARE_INDEX,
+                    tmp,
+                    size,
+                    3000);
+            if(res != size ){
+                Log.e("majs", "Did not transfer all of " + size + " just " + res);
+                if(res < 0) {
+                    Log.e("majs", "ERROR");
+                }
+            }
 			index += size+4;
-            //connection.controlTransfer();
 
         }
+        Toast toast = Toast.makeText(getApplicationContext(), "Did FW init", Toast.LENGTH_LONG);
+        toast.show();
 		Log.e("majs","usb " + endpoint.getMaxPacketSize());
     }
 

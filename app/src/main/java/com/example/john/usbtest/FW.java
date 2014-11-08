@@ -5,6 +5,12 @@ package com.example.john.usbtest;
  */
 public class FW {
 
+    public static int HT6022_FIRMWARE_SIZE          = 458;
+    public static int HT6022_FIRMWARE_VENDOR_ID     = 0X4B4;
+    public static int HT6022_FIRMWARE_REQUEST_TYPE  = 0X40;
+    public static int HT6022_FIRMWARE_REQUEST       = 0XA0;
+    public static int HT6022_FIRMWARE_INDEX         = 0X00;
+
     public static int HT6022_Firmware [] =
             {
 /* Control Packet Number: 001 */
